@@ -1,0 +1,14 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Regenerable outputs (rebuild with: python -m tankfloor ingest/platemap/normalize/match/rates/dashboard)
+data/processed/
+
+# Standalone dashboard build (regenerate with make_standalone.ps1)
+TK201-Floor-Corrosion-Dashboard-2011-2026.html
+
+# Byte-identical duplicates of the PDFs in data/raw/
+Inspections/

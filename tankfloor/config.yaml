@@ -1,0 +1,138 @@
+# Tank 201, Port Everglades FL — floor corrosion analysis configuration
+# All lengths in inches unless noted. Every value here that encodes an
+# assumption is marked ASSUMPTION and must be revisited if new info arrives.
+
+tank:
+  name: "TK 201"
+  site: "Port Everglades, FL (North)"
+  diameter_ft: 117.0          # both reports' data sheets (2026 footers say 116; data sheet says 117.00)
+  year_built: 1936            # 2011 report; 2026 report says 1933 — unresolved, does not affect rates
+  bottom_construction: "single-row lap riveted, original"
+  annular_ring: false
+  plate_count: 110
+  existing_patches_2026: 91   # bottom patches present at the 2026 inspection (ROSEN §3.4.2 p.11)
+  # Full-size floor plates per ROSEN repair list; sketch plates vary.
+  plate_nominal_width_in: 75.0
+  plate_nominal_length_in: 251.0
+
+nominal_thickness:
+  floor_in: 0.250             # both reports' data sheets
+  sketch_in: 0.250            # 2011 field UT saw 0.255-0.271 on some sketch plates; 0.250 used per report
+
+inspections:
+  "2011":
+    vendor: "Semper Fi Enterprises"
+    file: "data/raw/Port Everglades FL (C) - Tank 201- OOS June 2011.pdf"
+    # PDF page indices are 1-based, inclusive.
+    reduction_table_pages: [17, 30]
+    date_start: 2011-06-23
+    date_end: 2011-07-01      # used as the inspection date for interval math
+    method: "MFE floorscan + UT/pit gauge prove-up + visual"
+    units: inches
+    convention: "pit depth + remaining thickness, inches"
+    # Recording thresholds (censoring): only indications at/beyond these were recorded.
+    recording_threshold:
+      topside_remaining_in_max: 0.120
+      bottomside_remaining_in_max: 0.150
+  "2026":
+    vendor: "ROSEN"
+    file: "data/raw/Port Everglades, FL - TK 201 - OOS July 2026 - Preliminary Report REV 1.pdf"
+    # Vendor's own plate geometry (exact polygons, per-plate origin + axis
+    # direction, isotropic mm) exported from their Visio drawing by the TBit
+    # scanner software. Preferred over reverse-engineering the printed floor
+    # map; comment out to fall back to the PDF-derived calibrated layout.
+    layout_map: "data/raw/Bottom/Tbit/Work/Layout.MAP"
+    feature_list_pages: [25, 137]
+    repair_list_pages: [139, 140]
+    date_start: 2026-07-31
+    date_end: 2026-07-31
+    method: "MFL TBIT-ULTRA + UT/ECT/visual follow-up (ROSOFT)"
+    units: "percent wall loss; positions/sizes inches"
+    convention: "% metal loss"
+    # ASSUMPTION (user-confirmed 2026-08-06): Depth [%] is relative to 0.250" nominal.
+    depth_percent_basis_in: 0.250
+    # The PDF feature list is censored at >=49% depth (tool recorded >=20%).
+    recording_threshold:
+      depth_pct_min: 49
+
+# Phase 3 matching tolerances (tunable during demo review)
+matching:
+  # candidate radius, inches, measured to the 2011 anomaly's extent box
+  # (2011 cluster rows span ranges; distance is to the box, not the midpoint)
+  spatial_tolerance_in: 12.0
+  # measurement tolerance for depth plausibility: a matched 2026 depth may be
+  # up to this much SHALLOWER than the 2011 depth before being penalized
+  # (UT/MFL sizing ~ +/-10-20% of 0.250")
+  depth_tolerance_in: 0.050
+  weights:            # cost = weighted sum of normalized components
+    distance: 0.6
+    size: 0.2
+    depth_plausibility: 0.2
+  max_cost: 0.75      # assignments costlier than this are rejected
+  # second pass: unmatched 2026 features within a matched 2011 cluster's
+  # extent box (+ this margin) join that cluster's match group
+  cluster_margin_in: 6.0
+  # plates where the 2011 X polarity had minority evidence (letter-vote E):
+  # flag their results for review rather than trusting silently
+  watchlist_plates: [24, 33, 37, 38, 41, 59, 66, 101]
+
+rates:
+  api653_edition: "5th Edition (2014)"   # user-confirmed 2026-08-06
+  negative_growth_policy: "clamp_zero_and_flag"
+  # measurement tolerance per inspection, inches (drives rate uncertainty):
+  # 2011 pit gauge / UT prove-up; 2026 MFL sizing ~10% of 0.250" nominal
+  measurement_tolerance_in:
+    "2011": 0.010
+    "2026": 0.025
+  # matched pairs with a clamped/censored rate above this are flagged
+  high_growth_rate_in_per_yr: 0.004
+  # MRT projection per API 653 5th Ed (2014) — equation and values confirmed
+  # against the user's copy 2026-08-06:
+  #   MRT = min(RTbc, RTip) − Or × (StPr + UPr)      [§4.4.5.1 / §4.4.5.4]
+  projection:
+    mrt_min_bottom_in: 0.100        # Table 4.4 (no lining/leak detection)
+    mrt_min_critical_zone_in: 0.125 # Table 4.4
+    # UPr basis: ROSEN p.332 repair-strategy worksheet at the 49% threshold
+    # (no matched underside pairs to measure it; user decision 2026-08-06)
+    upr_in_per_yr: 0.00132
+    # StPr: measured governing short-term rate, NO coating credit
+    # (user decision 2026-08-06)
+    or_cap_years: 20                # max internal inspection interval
+    # Repair-strategy table (ROSEN p.332 "Repair Strategy with Coating"):
+    # UPr per threshold = (nominal - RT_after_repair) / years_installed.
+    years_installed: 93             # ROSEN basis (built 1933). tank.year_built says 1936 (2011 report) —
+                                    # unresolved; 93 is required to reproduce ROSEN's UPr column exactly.
+    coated_stpr_in_per_yr: 0.0      # ROSEN: StPr = 0 when coated. Shown ALONGSIDE the measured-rate
+                                    # projection; NOT used for the governing Or (user decision 2026-09-02).
+    repair_thresholds_pct: [35, 40, 45, 49, 51, 54, 56]
+
+# Shell openings, from the 2011 Semper Fi report pp.40-41 "Shell Nozzle and
+# Appurtenances Table". Positions are circumferential stations (ft) measured
+# from Manway A; converted to tank-frame x/y by tankfloor/normalize/shell.py.
+shell_appurtenances:
+  station_direction: ccw          # stations increase counterclockwise viewed from above (2026 p.11);
+                                  # cross-checked against 10 nozzle ticks drawn on DWG 5-1 (2011 PDF p.60)
+  station_zero_azimuth_deg: 288.8 # Manway A azimuth, clockwise from north (WNW, at plate 30). Derived
+                                  # from the black Manway P rectangle on DWG 5-1 (108.8 deg) + 180 deg;
+                                  # +/-1.5 deg (~18" of arc). Reproduce with tools/derive_station_zero.py
+  render_types: [manway]          # only these types are drawn (tank group request 2026-09-02)
+  items:
+    - {id: A, type: manway,    size_in: 24, station_ft: 0.0,    label: 'Manway A 24"'}
+    - {id: P, type: manway,    size_in: 20, station_ft: 183.75, label: 'Manway P 20" (riveted)'}
+    # Not rendered unless added to render_types:
+    - {id: B, type: doorsheet, size_in: 60, station_ft: 11.67,  label: 'Doorsheet B 60x60'}
+    - {id: D, type: doorsheet, size_in: 49, station_ft: 40.0,   label: 'Doorsheet D 49x49'}
+    - {id: I, type: nozzle,    size_in: 16, station_ft: 105.08, label: '16" suction (hot tap)'}
+    - {id: J, type: nozzle,    size_in: 10, station_ft: 121.58, label: '10" inlet'}
+    - {id: Q, type: nozzle,    size_in: 8,  station_ft: 221.67, label: '8" truck suction'}
+    - {id: X, type: nozzle,    size_in: 16, station_ft: 274.0,  label: '16" inlet w/ diffuser'}
+
+viz:
+  # Depth bands (% of nominal wall) for the scan maps; API 653-style traffic
+  # colours requested by the tank group 2026-09-02. edges_pct are the lower
+  # bounds of bands 1..n; below the first edge is band 0; the last band is
+  # through-wall (>= 100%). Colours: dataviz status palette + black.
+  depth_bands:
+    edges_pct: [50, 70, 90, 100]
+    labels: ["<50%", "50-69%", "70-89%", "90-99%", "through-wall"]
+    colors:  ["#0ca30c", "#fab219", "#ec835a", "#d03b3b", "#000000"]

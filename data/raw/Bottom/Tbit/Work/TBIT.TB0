@@ -1,0 +1,144 @@
+;***************************
+;* Bundle   V5.0
+;*
+;* TBIT.tb0
+;*
+;**************************
+
+[LinePlot]
+nFirstChannel=0
+nNumberOfChannels=72
+fOffset=100.000000
+fGain=20.000000
+fmmInPix=3.0
+bDisplayFeatures=1
+bPHH=1
+bPVH=0
+bIRC=0
+bPTH=0
+bSHH=0
+bLIFT=0
+fPHHGain=40.000000
+fPHHOffset=0.000000
+fPVHGain=40.000000
+fPVHOffset=100.000000
+fIRCGain=80
+fIRCOffset=100
+fPTHGain=100.000000
+fPTHOffset=100.000000
+fSHHGain=400.000000
+fSHHOffset=0.000000
+fLIFTGain=1000.000000
+fLIFTOffset=0.000000
+bFYVH=0
+bRYVH=0
+fFYVHGain=20.000000
+fFYVHOffset=100.000000
+fRYVHGain=20.000000
+fRYVHOffset=100.000000
+
+[BarGraph]
+fOffset=0.000000
+fGain=0.900000
+
+[General]
+szCurrentMaterial=API
+bUseLinearFactor=1
+bUseLinearWTFactor=1
+fLinearWTFactor=1.000000
+bUseLinearLiftoffFactor=0
+fLinearLiftoffFactor=1.000000
+nShowIb4Data=1
+bUseInternExtern=1
+NumberOfSketchPlates2BeInspected=110
+NumberOfAnnularPlates2BeInspected=0
+ServiceMode=1
+ToolsList=T51
+TankLiftOff=2.593751453656826
+MapfileNumberOfPlates=110
+MapfileTankDiameter=35.5
+
+[POSTPROCESSING]
+nRebuildDbf=2
+nBlockout=1 
+nStatist=1
+nEnableWct=1
+nEnableFeatureCorrelation=0
+nEnableLiftoffCalculationTool=1
+bWriteNotCorrelatedFeatures=1
+
+[C-Scan]
+fOffset=0.000000
+fGain=5.000000
+nPalette=8
+nZoomPos=10
+
+[Filter]
+fPass1LenInMM=30.000000
+nPass1Width=3
+fPass2LenInMM=3.000000
+fWeightCoeff=0.500000
+fFilterRefValueKorrOffset=0.000000
+fFilterRefValueKorrGain=0.000000
+
+[Features]
+fFeatureReportThreshold =20.000000
+fFeatureMarkThreshold =40.000000
+nFctDepthAdjust=1
+lfMaxCorrelationDist=50.000000000000000
+fInspectionSideFeatureLowerMarkThreshold =49.000000
+fInspectionSideFeatureUpperMarkThreshold =80.000000
+bUseInspectionSideFeatureUpperMarkThreshold =0
+fNonInspectionSideFeatureLowerMarkThreshold =49.000000
+fNonInspectionSideFeatureUpperMarkThreshold =80.000000
+bUseNonInspectionSideFeatureUpperMarkThreshold =0
+fInspectionSideFeatureLowerMarkThresholdOnAnnularPlates=40
+fNonInspectionSideFeatureLowerMarkThresholdOnAnnularPlates=40
+fFeatureCheckupThreshold=40.000000
+fReportMarkThreshold=40.000000
+
+[CriticalRegion]
+CriticalZoneEnabled=1
+CriticalZone=0.0762  
+CriticalAreaEnabled=1
+CriticalArea=0.5
+
+
+[Feature Types]
+Type0=Metal Loss
+Type1=Disabled
+Type2=Weld Feature
+Type3=Tag Weld
+Type4=Bubble
+Type5=Extra Metal
+Type6=Disbond
+Type7=Pitting Corr.
+Type8=Gen. Corr.
+Type9=Weld Feature
+Type10=Ripples
+Type11=Buckles
+Type12=Breakdown
+
+
+[Feature Method]
+Method0=Visual
+Method1=Ultrasonic
+Method2=Eddy Current
+Method3=Coating Test
+Method4=TBit
+
+  
+[WCT]
+; WCT == Wall thickness Calculation Tool 
+; WCT berechnet die Wandstärke bezogen auf eine Tankbodenplatte und speichert sie in *.IB5 Dateien 
+fWtMMInCount=10.0
+
+[CWT]
+; CWT Calculated Wall Thickness
+; CWT wird  Online berechnet, in LineView  dargestellt und in IB4- Dateien gespeichert.
+; Nach der Normierung mit CWT = (Count[i] - Offset[i]) * Gain[i]  werden Bereiche
+; mit CWT < fWtMarkThreshold gelb eingefärbt
+fWtMarkThreshold=5.0
+
+[Desktop]
+strActiveToolID=T51

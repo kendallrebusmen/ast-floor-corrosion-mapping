@@ -1,0 +1,998 @@
+<title>TK 201 Floor Corrosion — 2011→2026</title>
+<style>
+:root{
+  --paper:#f7f8f9; --card:#ffffff; --ink:#22272c; --ink-2:#4d545c; --muted:#6b7178;
+  --line:#dfe2e6; --line-soft:#eceef1;
+  --blue:#2a78d6; --blue-deep:#104281; --orange:#c94f1d;
+  --crit:#d03b3b; --warn:#a36f00; --good:#0a7a0a;
+  --crit-bg:#fbeaea; --warn-bg:#faf3e0; --good-bg:#e9f5e9;
+  --chip:#eef1f4; --ctx:#c9ccd1; --row-hi:#f3f6fa;
+  --mono:ui-monospace,"Cascadia Code",Consolas,"SF Mono",Menlo,monospace;
+  --sans:"Segoe UI",system-ui,-apple-system,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    --paper:#16181b; --card:#1e2126; --ink:#e8eaed; --ink-2:#b6bcc4; --muted:#8b929b;
+    --line:#33383f; --line-soft:#282c32;
+    --blue:#3987e5; --blue-deep:#86b6ef; --orange:#e17646;
+    --crit:#e66767; --warn:#d9a520; --good:#3fae3f;
+    --crit-bg:#3a2424; --warn-bg:#36301d; --good-bg:#20321f;
+    --chip:#282c32; --ctx:#4a4f56; --row-hi:#242a33;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#16181b; --card:#1e2126; --ink:#e8eaed; --ink-2:#b6bcc4; --muted:#8b929b;
+  --line:#33383f; --line-soft:#282c32;
+  --blue:#3987e5; --blue-deep:#86b6ef; --orange:#e17646;
+  --crit:#e66767; --warn:#d9a520; --good:#3fae3f;
+  --crit-bg:#3a2424; --warn-bg:#36301d; --good-bg:#20321f;
+  --chip:#282c32; --ctx:#4a4f56; --row-hi:#242a33;
+}
+:root[data-theme="light"]{
+  --paper:#f7f8f9; --card:#ffffff; --ink:#22272c; --ink-2:#4d545c; --muted:#6b7178;
+  --line:#dfe2e6; --line-soft:#eceef1;
+  --blue:#2a78d6; --blue-deep:#104281; --orange:#c94f1d;
+  --crit:#d03b3b; --warn:#a36f00; --good:#0a7a0a;
+  --crit-bg:#fbeaea; --warn-bg:#faf3e0; --good-bg:#e9f5e9;
+  --chip:#eef1f4; --ctx:#c9ccd1; --row-hi:#f3f6fa;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);margin:0;
+  font-size:15px;line-height:1.55}
+.wrap{max-width:1160px;margin:0 auto;padding:28px 22px 60px;display:flex;
+  flex-direction:column;gap:34px}
+.eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted)}
+h1{font-size:30px;font-weight:650;letter-spacing:-.015em;margin:6px 0 4px;
+  text-wrap:balance}
+h2{font-size:19px;font-weight:650;letter-spacing:-.01em;margin:0}
+.sec-head{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.sec-head p{margin:2px 0 0;color:var(--ink-2);max-width:68ch}
+.masthead{border-bottom:2px solid var(--ink);padding-bottom:18px;position:relative}
+.theme-btn{position:absolute;top:0;right:0;font-family:var(--mono);font-size:12px;
+  border:1px solid var(--line);background:var(--card);color:var(--ink-2);
+  border-radius:3px;padding:5px 11px;cursor:pointer}
+.theme-btn:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.meta-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{font-family:var(--mono);font-size:12px;background:var(--chip);
+  border:1px solid var(--line);border-radius:3px;padding:3px 9px;color:var(--ink-2);
+  font-variant-numeric:tabular-nums}
+.vs{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px;margin-top:14px;
+  font-size:14px;color:var(--ink-2)}
+.vs b{color:var(--ink)}
+.vs .arrow{font-family:var(--mono);color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+/* scenario cards */
+.scenarios{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.scn{background:var(--card);border:1px solid var(--line);border-radius:4px;
+  padding:16px 18px 15px;display:flex;flex-direction:column;gap:6px;
+  border-top-width:3px}
+.scn.crit{border-top-color:var(--crit)}
+.scn.warn{border-top-color:var(--warn)}
+.scn.good{border-top-color:var(--good)}
+.scn .tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;
+  text-transform:uppercase;font-weight:600;padding:2px 8px;border-radius:3px;
+  align-self:flex-start}
+.scn.crit .tag{color:var(--crit);background:var(--crit-bg)}
+.scn.warn .tag{color:var(--warn);background:var(--warn-bg)}
+.scn.good .tag{color:var(--good);background:var(--good-bg)}
+.scn h3{margin:2px 0 0;font-size:15px;font-weight:650}
+.scn .big{font-family:var(--mono);font-size:34px;font-weight:600;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1.1}
+.scn .big small{font-size:15px;color:var(--muted);font-weight:400}
+.scn p{margin:0;font-size:13px;color:var(--ink-2)}
+.scn .rt{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.scn .coated{font-family:var(--mono);font-size:12px;color:var(--ink-2);
+  border-top:1px dashed var(--line);padding-top:6px;margin-top:2px}
+.scn .coated b{color:var(--ink);font-weight:600}
+.callout{background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--warn);border-radius:4px;padding:14px 18px;
+  margin-top:14px;font-size:14px;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:4px;
+  padding:12px 14px;display:flex;flex-direction:column;gap:2px}
+.kpi .v{font-family:var(--mono);font-size:24px;font-weight:600;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kpi .v small{font-size:12px;color:var(--muted);font-weight:400}
+.kpi .l{font-size:12px;color:var(--muted);line-height:1.35}
+.kpi .note{font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--warn);margin-top:2px}
+/* map */
+.map-card{background:var(--card);border:1px solid var(--line);border-radius:4px;
+  padding:16px 18px}
+.map-controls{display:flex;flex-wrap:wrap;gap:14px;align-items:center;
+  justify-content:space-between;margin-bottom:8px}
+.seg{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:4px;
+  overflow:hidden}
+.seg button{font-family:var(--mono);font-size:12px;padding:6px 12px;border:0;
+  background:transparent;color:var(--ink-2);cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--blue);color:#fff}
+.seg button:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+.sidef{display:flex;gap:6px}
+.sidef button{font-family:var(--mono);font-size:12px;padding:5px 10px;
+  border:1px solid var(--line);background:transparent;color:var(--ink-2);
+  border-radius:3px;cursor:pointer}
+.sidef button[aria-pressed="true"]{border-color:var(--blue);color:var(--blue)}
+.sidef button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+.bandf{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 10px}
+.bandf-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--muted);margin-right:4px}
+.bandf button{font-family:var(--mono);font-size:12px;padding:4px 10px 4px 8px;
+  border:1px solid var(--line);background:transparent;color:var(--ink-2);
+  border-radius:3px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.bandf button .sw{width:10px;height:10px}
+.bandf button[aria-pressed="false"]{opacity:.45;text-decoration:line-through}
+.bandf button[aria-pressed="true"]{border-color:var(--ink-2)}
+.bandf button:focus-visible{outline:2px solid var(--blue);outline-offset:1px}
+#map [data-b].bhide{display:none}
+.map-note{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+#map{width:100%;height:auto;display:block}
+#map[data-view="overlay"] .a11{fill:var(--orange)}
+#tooltip{position:fixed;pointer-events:none;background:var(--ink);color:var(--paper);
+  font-family:var(--mono);font-size:12px;line-height:1.5;padding:8px 10px;
+  border-radius:4px;display:none;z-index:10;max-width:300px;
+  font-variant-numeric:tabular-nums;white-space:pre}
+.maplegend{display:flex;flex-wrap:wrap;gap:18px;align-items:center;margin-top:10px;
+  font-size:12px;color:var(--ink-2)}
+.maplegend .grad{display:flex;align-items:center;gap:8px}
+.maplegend .bar{width:130px;height:10px;border-radius:2px;border:1px solid var(--line)}
+.maplegend .bands{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.lg-item{display:flex;align-items:center;gap:6px}
+.sw{width:11px;height:11px;border-radius:50%;display:inline-block;border:1px solid var(--line)}
+.sw.sq{border-radius:2px}
+/* charts */
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:14px}
+.chart-card{background:var(--card);border:1px solid var(--line);border-radius:4px;
+  padding:16px 18px}
+.chart-card h3{margin:0 0 2px;font-size:14.5px;font-weight:650}
+.chart-card .sub{font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.chart-card svg{width:100%;height:auto;display:block}
+/* classification bars */
+.clsbar{display:flex;height:22px;border-radius:3px;overflow:hidden;margin:6px 0 4px}
+.clsbar div{min-width:2px}
+.clsbar div+div{margin-left:2px}
+.cls-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--ink-2);
+  margin-top:6px}
+.cls-row{margin-top:14px}
+.cls-row .t{font-family:var(--mono);font-size:12px;color:var(--muted)}
+/* table */
+.tbl-card{background:var(--card);border:1px solid var(--line);border-radius:4px;
+  padding:16px 18px}
+.tbl-scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);text-align:left;padding:7px 12px 7px 0;border-bottom:1px solid var(--line);
+  white-space:nowrap}
+td{font-family:var(--mono);font-variant-numeric:tabular-nums;padding:6px 12px 6px 0;
+  border-bottom:1px solid var(--line-soft);white-space:nowrap}
+td.hi{color:var(--crit);font-weight:600}
+tr.sel td{background:var(--row-hi);font-weight:600}
+.tbl-foot{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+/* all matched pairs: collapsed, filterable, exportable */
+details.pairs{background:var(--card);border:1px solid var(--line);border-radius:4px}
+details.pairs summary{list-style:none;cursor:pointer;padding:14px 18px;display:flex;
+  align-items:center;gap:10px;font-family:var(--mono);font-size:13px;color:var(--ink-2)}
+details.pairs summary::-webkit-details-marker{display:none}
+details.pairs summary::before{content:"▸";color:var(--muted);font-size:12px}
+details.pairs[open] summary::before{content:"▾"}
+details.pairs summary b{color:var(--ink);font-weight:600}
+details.pairs summary:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+.pairs-body{padding:0 18px 16px;border-top:1px solid var(--line-soft)}
+.pairs-tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 0 8px}
+.pairs-tools input[type="text"],.pairs-tools select{font-family:var(--mono);font-size:12px;
+  padding:5px 8px;border:1px solid var(--line);border-radius:3px;background:var(--card);
+  color:var(--ink)}
+.pairs-tools input[type="text"]{width:190px}
+.pairs-tools label.ck{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;
+  color:var(--ink-2);cursor:pointer}
+.pairs-tools .spacer{flex:1}
+.pairs-tools button{font-family:var(--mono);font-size:12px;padding:5px 10px;
+  border:1px solid var(--line);background:transparent;color:var(--ink-2);
+  border-radius:3px;cursor:pointer}
+.pairs-tools button.primary{border-color:var(--blue);color:var(--blue)}
+.pairs-tools button:focus-visible,.pairs-tools input:focus-visible,.pairs-tools select:focus-visible{
+  outline:2px solid var(--blue);outline-offset:1px}
+.pairs-count{font-family:var(--mono);font-size:12px;color:var(--muted);margin:0 0 8px;
+  display:flex;gap:14px;flex-wrap:wrap}
+.pairs-count .msg{color:var(--warn)}
+.pairs-scroll{max-height:460px;overflow:auto;border:1px solid var(--line-soft);border-radius:3px}
+#pairstbl th{position:sticky;top:0;background:var(--card);cursor:pointer;user-select:none;
+  padding-left:10px;z-index:1}
+#pairstbl th .dir{color:var(--blue);margin-left:3px}
+#pairstbl td{padding-left:10px}
+#pairstbl td.num{text-align:right}
+#pairstbl th.num{text-align:right}
+.chip-flag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  text-transform:uppercase;padding:1px 6px;border-radius:3px;margin-right:4px;
+  background:var(--chip);color:var(--ink-2)}
+.chip-flag.crit{background:var(--crit-bg);color:var(--crit)}
+.chip-flag.warn{background:var(--warn-bg);color:var(--warn)}
+.pairs-fallback{width:100%;height:120px;font-family:var(--mono);font-size:11px;margin-top:8px}
+/* assumptions */
+.assume{background:var(--card);border:1px solid var(--line);border-radius:4px;
+  padding:6px 18px}
+.assume ul{list-style:none;margin:0;padding:0}
+.assume li{display:flex;gap:14px;padding:11px 0;border-bottom:1px solid var(--line-soft);
+  font-size:13.5px;color:var(--ink-2)}
+.assume li:last-child{border-bottom:0}
+.assume .k{font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted);flex:0 0 150px;padding-top:2px}
+.assume b{color:var(--ink)}
+footer{border-top:1px solid var(--line);padding-top:14px;font-size:12.5px;
+  color:var(--muted)}
+footer .mono{font-family:var(--mono)}
+@media (prefers-reduced-motion: no-preference){
+  .seg button,.sidef button{transition:background .12s,color .12s}
+}
+</style>
+
+<div class="wrap">
+
+<header class="masthead">
+  <button id="themeToggle" class="theme-btn" type="button"
+    aria-label="Switch color theme">☾ dark</button>
+  <div class="eyebrow">API 653 Out-of-Service Inspection Comparison</div>
+  <h1>Tank 201 — Floor Corrosion Assessment</h1>
+  <div class="vs">
+    <span><b>2011</b> Semper Fi · MFE floorscan · Jun 23 – Jul 1</span>
+    <span class="arrow">⟶ <span data-stat="years" data-fmt="2"></span> yr ⟶</span>
+    <span><b>2026</b> ROSEN · MFL TBIT-ULTRA · Jul 31 (prelim. Rev 1)</span>
+  </div>
+  <div class="meta-row">
+    <span class="chip">PORT EVERGLADES, FL (NORTH)</span>
+    <span class="chip">⌀ 117 FT</span>
+    <span class="chip">BOTTOM <span data-stat="nominal" data-fmt="3"></span>" NOM · LAP RIVETED · ORIGINAL</span>
+    <span class="chip">#6 FUEL OIL · HEATED</span>
+    <span class="chip">CB&amp;I HORTON · API-12C</span>
+  </div>
+</header>
+
+<section aria-labelledby="h-dec">
+  <div class="sec-head">
+    <div class="eyebrow">The decision</div>
+    <h2 id="h-dec">Next internal inspection interval, by repair scope</h2>
+    <p>MRT = min(RT<sub>bc</sub>, RT<sub>ip</sub>) − O<sub>r</sub>(StPr + UPr), API 653 5th Ed
+      §4.4.5.1/§4.4.5.4 · Table 4.4 minimum <span data-stat="mrt_min" data-fmt="3"></span>" ·
+      headline uses the measured StPr with no coating credit; the coated line on each card shows
+      the same repair with StPr = <span data-stat="coated_stpr"></span> (ROSEN's basis).</p>
+  </div>
+  <div class="scenarios">
+    <div class="scn crit">
+      <span class="tag">Not viable</span>
+      <h3>As-found — no repairs</h3>
+      <div class="big"><span data-stat="or_asfound" data-fmt="1"></span> <small>yr</small></div>
+      <p>Deepest pit leaves <span data-stat="rt_asfound" data-fmt="3"></span>" — already below the
+         <span data-stat="mrt_min" data-fmt="3"></span>" Table 4.4 minimum.
+         The floor cannot return to service as-is.</p>
+      <div class="rt">min RT <span data-stat="rt_asfound" data-fmt="3"></span>"</div>
+      <div class="coated">coated (StPr = 0): <b><span data-stat="or_coated_asfound" data-fmt="1"></span> yr</b> — coating cannot rescue a through-wall pit</div>
+    </div>
+    <div class="scn warn">
+      <span class="tag">Short horizon</span>
+      <h3>Repair all ≥<span data-stat="threshold_pct"></span>% features</h3>
+      <div class="big"><span data-stat="or_repaired" data-fmt="1"></span> <small>yr</small></div>
+      <p>Patching every listed feature leaves <span data-stat="rt_repaired" data-fmt="4"></span>" plate that the measured
+         rate consumes quickly. Repair-in-kind buys very little time.</p>
+      <div class="rt">min RT <span data-stat="rt_repaired" data-fmt="4"></span>"</div>
+      <div class="coated">repair + coat (StPr = 0): <b><span data-stat="or_coated_repaired" data-fmt="1"></span> yr</b> (cap; raw <span data-stat="or_coated_repaired_raw" data-fmt="1"></span> yr — ROSEN's number)</div>
+    </div>
+    <div class="scn good">
+      <span class="tag">Supported</span>
+      <h3>Replace bottom — new <span data-stat="nominal" data-fmt="3"></span>"</h3>
+      <div class="big"><span data-stat="or_new" data-fmt="1"></span> <small>yr</small></div>
+      <p>Matches ROSEN recommendation #1. Full nominal thickness at the measured
+         governing rates, inside the <span data-stat="cap"></span>-yr cap.</p>
+      <div class="rt">min RT <span data-stat="rt_new" data-fmt="3"></span>"</div>
+      <div class="coated">new bottom + coat (StPr = 0): <b><span data-stat="or_coated_new" data-fmt="1"></span> yr</b> (cap)</div>
+    </div>
+  </div>
+  <div class="callout">
+    <b>Why the headline differs from the vendor worksheet:</b> ROSEN's p.332 sheet shows
+    ≈<span data-stat="or_coated_repaired_raw" data-fmt="0"></span> yr at the
+    <span data-stat="threshold_pct"></span>% repair threshold because it sets StPr = 0 (coating credit).
+    But the measured <span data-stat="stpr" data-fmt="4"></span> in/yr governing rate occurred
+    <b>with the post-2011 coating in place</b> — pits grew from 52% to
+    <span data-stat="deepest_pct"></span>% under it. On this tank's own evidence the coating credit
+    did not hold, so the headline intervals use the measured rate and the coated figures are shown
+    for comparison only. Raise with the integrity/CP team before quoting an interval.
+  </div>
+</section>
+
+<section aria-labelledby="h-rep">
+  <div class="sec-head">
+    <div class="eyebrow">Repair strategy with coating · ROSEN p.332 reproduced</div>
+    <h2 id="h-rep">Interval by repair threshold, coated and uncoated</h2>
+    <p>RT after repair = <span data-stat="nominal" data-fmt="3"></span>" × (1 − threshold).
+      UPr for each column is the long-term average (<span data-stat="nominal" data-fmt="3"></span>" − RT) /
+      <span data-stat="years_installed"></span> yr installed, exactly as the vendor worksheet computes it.
+      Coated: StPr = <span data-stat="coated_stpr"></span>. Uncoated: measured StPr
+      <span data-stat="stpr" data-fmt="4"></span> in/yr. O<sub>r</sub> capped at <span data-stat="cap"></span> yr.</p>
+  </div>
+  <div class="tbl-card"><div class="tbl-scroll">
+    <table id="repairtbl">
+      <thead><tr><th>repair threshold</th><th>RT after repair</th><th>UPr in/yr</th>
+        <th>O<sub>r</sub> coated, raw</th><th>O<sub>r</sub> coated</th>
+        <th>O<sub>r</sub> uncoated (measured StPr)</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <p class="tbl-foot">Highlighted row = the 2026 list's <span data-stat="threshold_pct"></span>% recording
+    threshold (the repair scope ROSEN priced). The coated-raw column matches the vendor's printed values;
+    the uncoated column is what the same repair scope yields at the rate actually measured on this floor.
+    <span data-stat="years_installed"></span> yr installed follows ROSEN (built 1933); the 2011 report says
+    1936 — unresolved, ±3 yr changes UPr by ~3%.</p></div>
+</section>
+
+<section aria-labelledby="h-kpi">
+  <div class="sec-head">
+    <div class="eyebrow">Measured over <span data-stat="years" data-fmt="2"></span> years</div>
+    <h2 id="h-kpi">Governing rates and match results</h2>
+  </div>
+  <div class="kpis">
+    <div class="kpi"><span class="v" data-stat="stpr" data-fmt="4"></span>
+      <span class="l">governing StPr, in/yr (topside) · ±<span data-stat="stpr_unc" data-fmt="4"></span></span></div>
+    <div class="kpi"><span class="v" data-stat="upr"></span>
+      <span class="l">UPr, in/yr (underside)</span>
+      <span class="note">assumed — ROSEN worksheet</span></div>
+    <div class="kpi"><span class="v"><span data-stat="matched"></span> <small>/ <span data-stat="n11"></span></small></span>
+      <span class="l">2011 indications matched to a 2026 feature (<span data-stat="matched_pct"></span>%)</span></div>
+    <div class="kpi"><span class="v" data-stat="high"></span>
+      <span class="l">matched pairs growing &gt; <span data-stat="high_rate"></span> in/yr</span></div>
+    <div class="kpi"><span class="v"><span data-stat="deepest_pct"></span><small>%</small></span>
+      <span class="l">deepest 2026 pit — <span data-stat="deepest_rt" data-fmt="3"></span>" remaining
+      (plates <span data-stat="deepest_plates"></span>)</span></div>
+    <div class="kpi"><span class="v" data-stat="yrs_median_matched" data-fmt="1"></span>
+      <span class="l">median years remaining to <span data-stat="mrt_min" data-fmt="3"></span>" for matched pits,
+      at each pit's own rate + UPr (min <span data-stat="yrs_min_matched" data-fmt="1"></span>)</span></div>
+    <div class="kpi"><span class="v" data-stat="patches"></span>
+      <span class="l">patches installed since 2011 — explains most unmatched
+      2011 indications</span></div>
+  </div>
+</section>
+
+<section aria-labelledby="h-map">
+  <div class="sec-head">
+    <div class="eyebrow">Floor map · north up · plate numbers per shared serpentine scheme</div>
+    <h2 id="h-map">Where the floor is corroding</h2>
+    <p>Plate outlines and 2026 positions use the scanner project's own plate geometry
+      (Layout.MAP, exact mm); 2011 positions within drawing precision. Black bars on the shell
+      are the two manways (stations from the 2011 shell-appurtenance table). Hover any marker
+      for depth, rate and years remaining.</p>
+  </div>
+  <div class="map-card">
+    <div class="map-controls">
+      <div class="seg" role="group" aria-label="Map view">
+        <button data-view="rates" aria-pressed="true">Corrosion rates</button>
+        <button data-view="v26" aria-pressed="false">2026 scan</button>
+        <button data-view="v11" aria-pressed="false">2011 scan</button>
+        <button data-view="overlay" aria-pressed="false">Overlay</button>
+        <button data-view="repaired" aria-pressed="false">Repaired candidates</button>
+      </div>
+      <div class="sidef" role="group" aria-label="Surface filter">
+        <button data-side="all" aria-pressed="true">Both surfaces</button>
+        <button data-side="top" aria-pressed="false">Topside</button>
+        <button data-side="bot" aria-pressed="false">Bottomside</button>
+      </div>
+    </div>
+    <div class="bandf" role="group" aria-label="Depth band filter" id="bandf">
+      <span class="bandf-label">show depth</span>
+      <!-- one toggle per band, built from DATA.bands -->
+      <button type="button" class="bandf-all" data-band="all">all</button>
+    </div>
+    <svg id="map" viewBox="-840 -770 1680 1560" role="img"
+         aria-label="Tank 201 floor map with anomaly positions and manways"></svg>
+    <div class="maplegend" id="legend"></div>
+    <p class="map-note" id="mapnote"></p>
+  </div>
+</section>
+
+<section aria-labelledby="h-dist">
+  <div class="sec-head">
+    <div class="eyebrow">Distributions</div>
+    <h2 id="h-dist">Most matched pits grew slowly — a distinct fast tail drives the rates</h2>
+  </div>
+  <div class="charts">
+    <div class="chart-card">
+      <h3>Depth change of the <span data-stat="matched"></span> matched pairs</h3>
+      <p class="sub">mils over <span data-stat="years" data-fmt="2"></span> yr · negative bins are sizing noise (rate clamped to 0)</p>
+      <svg id="ch-growth" viewBox="0 0 520 190"></svg>
+    </div>
+    <div class="chart-card">
+      <h3>2026 feature depths — <span data-stat="n26" data-fmt="int"></span> features ≥<span data-stat="threshold_pct"></span>%</h3>
+      <p class="sub">% of <span data-stat="nominal" data-fmt="3"></span>" nominal wall · 100% = through-wall</p>
+      <svg id="ch-depth" viewBox="0 0 520 190"></svg>
+    </div>
+  </div>
+</section>
+
+<section aria-labelledby="h-cls">
+  <div class="sec-head">
+    <div class="eyebrow">Reconciliation of the two inspections</div>
+    <h2 id="h-cls">What happened to every recorded anomaly</h2>
+  </div>
+  <div class="chart-card">
+    <div class="cls-row">
+      <span class="t"><span data-stat="n11"></span> INDICATIONS RECORDED IN 2011</span>
+      <div class="clsbar" id="bar11"></div>
+      <div class="cls-legend" id="leg11"></div>
+    </div>
+    <div class="cls-row">
+      <span class="t"><span data-stat="n26" data-fmt="int"></span> FEATURES LISTED IN 2026 (≥<span data-stat="threshold_pct"></span>% DEPTH)</span>
+      <div class="clsbar" id="bar26"></div>
+      <div class="cls-legend" id="leg26"></div>
+    </div>
+    <p class="map-note">"Below threshold" reflects each list's recording floor: 2011 recorded
+      topside pits only at ≥52% loss; the 2026 list starts at <span data-stat="threshold_pct"></span>% and excludes features under
+      the <span data-stat="patches"></span> existing patches — so "new in 2026" mostly means <i>newly deep enough to list</i>,
+      and unmatched 2011 indications are mostly <i>under a patch</i>.</p>
+  </div>
+</section>
+
+<section aria-labelledby="h-tbl">
+  <div class="sec-head">
+    <div class="eyebrow">Highest short-term rates · flagged &gt; <span data-stat="high_rate"></span> in/yr</div>
+    <h2 id="h-tbl">The <span data-stat="high"></span> locations to watch</h2>
+    <p>If the bottom is not replaced, these govern. Years remaining = time for the pit to reach the
+      <span data-stat="mrt_min" data-fmt="3"></span>" minimum at its own measured rate plus UPr.
+      IDs reference the source reports: 2011 = plate + reduction-table row; 2026 = feature-list number.</p>
+  </div>
+  <div class="tbl-card"><div class="tbl-scroll">
+    <table id="hitable">
+      <thead><tr><th>2011 id</th><th>2026 id</th><th>plate</th><th>depth 2011</th>
+        <th>depth 2026</th><th>rate in/yr</th><th>pair dist</th><th>yrs remaining</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div></div>
+</section>
+
+<section aria-labelledby="h-pairs">
+  <div class="sec-head">
+    <div class="eyebrow">Every 2011 → 2026 match</div>
+    <h2 id="h-pairs">All matched pairs</h2>
+    <p>The full match table behind the map and the rates. Filter, sort by any column, and
+      export what you see as CSV.</p>
+  </div>
+  <details class="pairs" id="pairs">
+    <summary><b><span data-stat="matched"></span> matched pairs</b> · filter · sort · export CSV</summary>
+    <div class="pairs-body">
+      <div class="pairs-tools">
+        <input type="text" id="pq" placeholder="2011 id, 2026 id or plate…" aria-label="Search ids or plate">
+        <select id="pband" aria-label="2026 depth band"></select>
+        <label class="ck"><input type="checkbox" id="phigh"> high growth only</label>
+        <label class="ck"><input type="checkbox" id="pclamp"> hide clamped (0 rate)</label>
+        <label class="ck"><input type="checkbox" id="preview"> review-flagged only</label>
+        <button type="button" id="preset">reset</button>
+        <span class="spacer"></span>
+        <button type="button" id="pcopy">Copy CSV</button>
+        <button type="button" id="pdl" class="primary" hidden>Download CSV</button>
+      </div>
+      <p class="pairs-count"><span id="pcount"></span><span class="msg" id="pmsg"></span></p>
+      <div class="pairs-scroll">
+        <table id="pairstbl">
+          <thead><tr>
+            <th data-sort="id11">2011 id</th><th data-sort="id26">2026 id</th>
+            <th data-sort="plate" class="num">plate</th>
+            <th data-sort="d11" class="num">depth 2011</th><th data-sort="d26" class="num">depth 2026</th>
+            <th data-sort="growth" class="num">growth mils</th><th data-sort="rate" class="num">rate in/yr</th>
+            <th data-sort="yrs" class="num">yrs remaining</th><th data-sort="dist" class="num">pair dist</th>
+            <th data-sort="rem26" class="num">RT 2026</th><th>flags</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+</section>
+
+<section aria-labelledby="h-ass">
+  <div class="sec-head">
+    <div class="eyebrow">Read before acting on the numbers</div>
+    <h2 id="h-ass">Assumptions and data-quality notes</h2>
+  </div>
+  <div class="assume"><ul>
+    <li><span class="k">Standard</span><span><b>API 653 5th Edition (2014).</b> MRT equation,
+      section numbers, and the <span data-stat="mrt_min" data-fmt="3"></span>" Table 4.4 minimum confirmed against the owner's copy
+      (2026-08-06).</span></li>
+    <li><span class="k">2026 depth basis</span><span>ROSEN Depth [%] taken as % of the
+      <b><span data-stat="nominal" data-fmt="3"></span>" nominal</b> plate (owner decision 2026-08-06).
+      <span data-stat="threshold_pct"></span>% ⇒ <span data-stat="rt_repaired" data-fmt="4"></span>" remaining.</span></li>
+    <li><span class="k">UPr basis</span><span><b>Assumed, not measured.</b> No underside pairs
+      matched (2011's three underside calls were 24–36% loss — below the 2026 list's
+      <span data-stat="threshold_pct"></span>% floor). Value from ROSEN's p.332 repair-strategy worksheet at the
+      <span data-stat="threshold_pct"></span>% threshold: (<span data-stat="nominal" data-fmt="3"></span>" − RT) /
+      <span data-stat="years_installed"></span> yr installed.</span></li>
+    <li><span class="k">Coating credit</span><span><b>None in the headline intervals.</b> Measured topside growth
+      2011→2026 occurred with the post-2011 coating in place. Coated figures (StPr = <span data-stat="coated_stpr"></span>)
+      are shown beside every scenario and in the repair-strategy table so both readings are visible.</span></li>
+    <li><span class="k">Years remaining</span><span>Per pit: (RT<sub>2026</sub> − <span data-stat="mrt_min" data-fmt="3"></span>") /
+      (rate + UPr), capped at <span data-stat="cap"></span> yr. Matched pits use their own 2011→2026 rate (clamped at 0,
+      so UPr alone drives clamped pairs); unmatched 2026 features use the governing StPr. A pit already
+      below the minimum shows 0.</span></li>
+    <li><span class="k">Depth bands</span><span>Map colours are discrete bands of depth % (&lt;50 / 50–69 / 70–89 /
+      90–99 / through-wall). The 2026 list starts at <span data-stat="threshold_pct"></span>%, so its green band holds only
+      the features at exactly 49%. Yellow and orange are low-contrast on white by design — every marker carries a
+      hairline outline and its exact % in the tooltip.</span></li>
+    <li><span class="k">Manways</span><span>Manway A (24") and Manway P (20", riveted) from the 2011 shell
+      appurtenance table (stations 0'-0" and 183'-9", counterclockwise). Manway A's compass position (288.8°) was
+      read from the vector geometry of DWG 5-1 and agrees with the drawn nozzle ticks within 1.5°.</span></li>
+    <li><span class="k">Censoring</span><span>The 2026 PDF list contains only features ≥<span data-stat="threshold_pct"></span>% depth
+      and excludes repaired locations; 2011 recorded topside only at remaining ≤0.120".
+      Match rate and "new" counts must be read against these floors.</span></li>
+    <li><span class="k">Negative growth</span><span><span data-stat="clamped"></span> of <span data-stat="matched"></span> pairs sized shallower in 2026 than
+      2011 — within combined sizing tolerance (±<span data-stat="depth_tol" data-fmt="3"></span>"). Rates clamped to 0 and flagged, never
+      reported negative.</span></li>
+    <li><span class="k">Position quality</span><span>Plate geometry (outlines, per-plate origins
+      and axis directions) is the vendor's own Layout.MAP export from their Visio floor drawing —
+      exact isotropic millimeters, cross-checked against ROSEN's drawn floor map (~2.5" median;
+      the residual is page print distortion). 2011 positions verified against DWG 5-1's plotted
+      letters (drawing precision ≈ ±20"). Eight plates carry a residual 2011 axis-polarity
+      watchlist flag.</span></li>
+    <li><span class="k">Matching</span><span>12" candidate radius, Hungarian assignment per
+      plate/surface, growth-plausibility scoring. Median matched-pair separation <span data-stat="medianDist" data-fmt="1"></span>".
+      All tolerances tunable in <span class="mono">config.yaml</span>.</span></li>
+  </ul></div>
+</section>
+
+<footer>
+  Sources: Semper Fi Enterprises Formal OOS Inspection, Tank 201, June 2011 (final) ·
+  ROSEN API 653 Internal Inspection 0-1000-18486, July 31 2026 (preliminary Rev 1).
+  Generated by <span class="mono">python -m tankfloor dashboard</span>; every number on this page is
+  computed from the processed data and checked by the pipeline's automated test suite.
+</footer>
+
+</div>
+<div id="tooltip"></div>
+
+<script>
+/* light is the default for this audience; dark is opt-in via the toggle
+   (or a viewer-stamped data-theme, which wins if already present) */
+const rootEl = document.documentElement;
+if (!rootEl.getAttribute("data-theme")) rootEl.setAttribute("data-theme", "light");
+const themeBtn = document.getElementById("themeToggle");
+function syncThemeBtn(){
+  themeBtn.textContent = rootEl.getAttribute("data-theme") === "dark"
+    ? "☀ light" : "☾ dark";
+}
+themeBtn.addEventListener("click", () => {
+  rootEl.setAttribute("data-theme",
+    rootEl.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  syncThemeBtn();
+});
+syncThemeBtn();
+
+const DATA = __DATA__;
+const STATS = __STATS__;
+
+/* ---------- named indexes into the positional arrays (DATA.fields is the contract) */
+const F = Object.fromEntries(Object.entries(DATA.fields).map(([k, names]) =>
+  [k, Object.fromEntries(names.map((n, i) => [n, i]))]));
+const A11 = F.a11, A26 = F.a26, RT = F.rates, NF = F.nf, HI = F.high;
+
+/* ---------- fill every data-stat placeholder from STATS */
+document.querySelectorAll("[data-stat]").forEach(el => {
+  const v = STATS[el.dataset.stat];
+  if (v == null) return;
+  const f = el.dataset.fmt;
+  el.textContent = f === "int" ? Number(v).toLocaleString("en-US")
+    : f != null ? Number(v).toFixed(+f) : v;
+});
+
+/* ---------- color scales */
+const BLUES = ["#cde2fb","#b7d3f6","#9ec5f4","#86b6ef","#6da7ec","#5598e7",
+ "#3987e5","#2a78d6","#256abf","#1c5cab","#184f95","#104281","#0d366b"];
+function ramp(t){
+  t = Math.max(0, Math.min(1, t));
+  const i = Math.min(BLUES.length-2, Math.floor(t*(BLUES.length-1)));
+  const f = t*(BLUES.length-1)-i;
+  const a = BLUES[i].slice(1), b = BLUES[i+1].slice(1);
+  const ch = k => Math.round(parseInt(a.substr(k,2),16)*(1-f)+parseInt(b.substr(k,2),16)*f);
+  return `rgb(${ch(0)},${ch(2)},${ch(4)})`;
+}
+const rateT = r => r/0.008;
+/* depth-% bands: lower-inclusive edges, last band = through-wall */
+const BANDS = DATA.bands;
+function bandIdx(p){ let i=0; for(const e of BANDS.edges_pct){ if(p>=e) i++; else break; } return i; }
+const bandColor = p => BANDS.colors[bandIdx(p)];
+const bandStroke = p => bandIdx(p)===BANDS.colors.length-1 ? "var(--ink)" : "var(--card)";
+
+/* ---------- floor map */
+const svg = document.getElementById("map");
+const SY = y => -y;   /* tank +Y (north) is SVG up */
+const R = DATA.radius;
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); }
+
+function buildMap(){
+  let s = "";
+  s += `<circle cx="0" cy="0" r="${R}" fill="none" stroke="var(--ink)" stroke-width="2.4"/>`;
+  s += `<g id="Lplates">`;
+  for(const p of DATA.plates){
+    const pts = p.poly.map(q=>`${q[0]},${SY(q[1])}`).join(" ");
+    s += `<polygon points="${pts}" fill="none" stroke="var(--line)" stroke-width="1.1"/>`;
+    s += `<text x="${p.c[0]}" y="${SY(p.c[1])}" font-size="13" fill="var(--muted)"
+      text-anchor="middle" dominant-baseline="middle" font-family="var(--mono)">${p.id}</text>`;
+  }
+  s += `</g>`;
+
+  /* 2026 context + scan layers, split by side */
+  for(const side of [0,1]){
+    const tag = side? "b":"t";
+    s += `<g id="Lctx${tag}" data-side="${tag}">`;
+    DATA.a26.forEach((f,i)=>{ if(f[A26.side]!==side) return;
+      s += `<circle cx="${f[A26.x]}" cy="${SY(f[A26.y])}" r="2.1" fill="var(--ctx)" data-b="${bandIdx(f[A26.pct])}"/>`; });
+    s += `</g>`;
+    s += `<g id="L26${tag}" data-side="${tag}">`;
+    DATA.a26.forEach((f,i)=>{ if(f[A26.side]!==side) return;
+      const c = bandColor(f[A26.pct]), st = bandStroke(f[A26.pct]), b = bandIdx(f[A26.pct]);
+      const x=f[A26.x], y=SY(f[A26.y]);
+      s += side
+        ? `<rect x="${x-3}" y="${y-3}" width="6" height="6" fill="${c}" stroke="${st}" stroke-width="0.6" data-l="26" data-i="${i}" data-b="${b}"/>`
+        : `<circle cx="${x}" cy="${y}" r="3" fill="${c}" stroke="${st}" stroke-width="0.6" data-l="26" data-i="${i}" data-b="${b}"/>`; });
+    s += `</g>`;
+    s += `<g id="L11${tag}" data-side="${tag}">`;
+    for(const a of DATA.a11){ if(a[A11.side]!==side) continue;
+      const tip = `${a[A11.id]}\ndepth ${a[A11.depth].toFixed(3)}" = ${a[A11.pct]}% of nominal  ·  ${side?"bottomside":"topside"}`;
+      const c = bandColor(a[A11.pct]), st = bandStroke(a[A11.pct]), b = bandIdx(a[A11.pct]);
+      const x=a[A11.x], y=SY(a[A11.y]);
+      s += side
+        ? `<rect class="a11" x="${x-6}" y="${y-6}" width="12" height="12" fill="${c}"
+             stroke="${st}" stroke-width="1" data-tip="${esc(tip)}" data-b="${b}"/>`
+        : `<circle class="a11" cx="${x}" cy="${y}" r="5.4" fill="${c}"
+             stroke="${st}" stroke-width="1" data-tip="${esc(tip)}" data-b="${b}"/>`; }
+    s += `</g>`;
+  }
+
+  /* matched-pair rates (all topside) */
+  s += `<g id="Lrates" data-side="t">`;
+  for(const r of DATA.rates){
+    const tip = `${r[RT.id11]} ⟶ ${r[RT.id26]}\n${r[RT.d11].toFixed(3)}" ⟶ ${r[RT.d26].toFixed(4)}"\n`+
+      `rate ${r[RT.rate].toFixed(4)} in/yr${r[RT.high]?"  ⚑ HIGH":""}${r[RT.clamped]?"  (clamped 0)":""}\n`+
+      `years remaining ${r[RT.yrs].toFixed(1)} (own rate + UPr, to ${STATS.mrt_min.toFixed(3)}")\n`+
+      `pair distance ${r[RT.dist]}"`;
+    const b = bandIdx(r[RT.d26] / STATS.nominal * 100);   /* band of the pit's 2026 depth */
+    if(r[RT.high]) s += `<circle cx="${r[RT.x]}" cy="${SY(r[RT.y])}" r="12.5" fill="none"
+      stroke="var(--crit)" stroke-width="2.4" data-b="${b}"/>`;
+    s += `<circle cx="${r[RT.x]}" cy="${SY(r[RT.y])}" r="6.2" fill="${ramp(rateT(r[RT.rate]))}"
+      stroke="var(--card)" stroke-width="1.1" data-tip="${esc(tip)}" data-b="${b}"/>`;
+  }
+  s += `</g>`;
+
+  /* not-found 2011 (repaired candidates) */
+  s += `<g id="Lnf">`;
+  for(const n of DATA.nf){
+    const flag = n[NF.flag]==="near_miss" ? "near-miss — review"
+      : n[NF.flag]==="watchlist_plate" ? "axis watchlist plate" : "likely under a patch";
+    const tip = `${n[NF.id]}\nno 2026 counterpart\n${flag}`+
+      (n[NF.nearest]!=null?`\nnearest 2026 feature ${n[NF.nearest]}"`:"");
+    const x=n[NF.x], y=SY(n[NF.y]);
+    s += `<g data-tip="${esc(tip)}">`+
+      `<circle cx="${x}" cy="${y}" r="8" fill="transparent"/>`+
+      `<path d="M${x-5} ${y-5} L${x+5} ${y+5} M${x-5} ${y+5} L${x+5} ${y-5}"
+        stroke="${n[NF.flag]?"var(--warn)":"var(--orange)"}" stroke-width="2.6"/></g>`;
+  }
+  s += `</g>`;
+
+  /* shell appurtenances (manways) — always visible, drawn last */
+  s += `<g id="Lapp">`;
+  for(const a of DATA.app){
+    const pts = a.pts.map(q=>`${q[0]},${SY(q[1])}`).join(" ");
+    const tip = `${a.label}\nshell azimuth ${a.az}° (cw from north)`;
+    const k = (R + 30) / R, lx = a.x*k, ly = SY(a.y*k);
+    s += `<polygon points="${pts}" fill="var(--ink)" stroke="var(--card)" stroke-width="1.2" data-tip="${esc(tip)}"/>`;
+    s += `<text x="${lx}" y="${ly}" font-size="13" fill="var(--ink)" font-family="var(--mono)"
+      text-anchor="${lx<0?"end":"start"}" dominant-baseline="middle">${esc(a.label)}</text>`;
+  }
+  s += `</g>`;
+  svg.innerHTML = s;
+}
+buildMap();
+
+/* ---------- view + side switching */
+const n = k => Number(STATS[k]).toLocaleString("en-US");
+const VIEWS = {
+  rates:   {show:["Lctxt","Lctxb","Lrates"],
+    note:`Matched 2011→2026 pairs colored by short-term rate; red ring = > ${STATS.high_rate} in/yr. `+
+         "Gray dots: all 2026 features for context. Hover for rate and years remaining.",
+    legend:[["grad","rate 0 → 0.008 in/yr"],["ring","high growth"],["ctx","2026 feature"],["app","manway"]]},
+  v26:     {show:["L26t","L26b"],
+    note:`All ${n("n26")} features from the 2026 ROSEN list, colored by depth band (% of nominal). `+
+         `Circles = topside (${n("n26_top")}) · squares = bottomside (${n("n26_bot")}). Hover for years remaining at the governing rate.`,
+    legend:[["bands","depth"],["shape","circle top · square bottom"],["app","manway"]]},
+  v11:     {show:["L11t","L11b"],
+    note:`All ${n("n11")} recordable indications from the 2011 Semper Fi table, colored by depth band. `+
+         `Circles = topside (${n("n11_top")}) · squares = bottomside (${n("n11_bot")}).`,
+    legend:[["bands","depth"],["shape","circle top · square bottom"],["app","manway"]]},
+  overlay: {show:["Lctxt","Lctxb","L11t","L11b"],
+    note:"2011 indications (orange) over the 2026 feature field (gray). Orange with no gray "+
+         "nearby usually marks a repaired location.",
+    legend:[["c11","2011 indication"],["ctx","2026 feature"],["app","manway"]]},
+  repaired:{show:["Lctxt","Lctxb","Lnf"],
+    note:`The ${n("notfound")} 2011 indications with no 2026 counterpart — candidates for the ${n("patches")} installed `+
+         "patches. Amber ✕ = flagged for review (near-miss or watchlist plate).",
+    legend:[["x1","likely patched"],["x2","flagged for review"],["ctx","2026 feature"],["app","manway"]]},
+};
+let view="rates", sideF="all";
+const ALL=["Lctxt","Lctxb","L26t","L26b","L11t","L11b","Lrates","Lnf"];
+function apply(){
+  const v=VIEWS[view];
+  svg.dataset.view = view;
+  for(const id of ALL){
+    const el=document.getElementById(id); if(!el) continue;
+    let on=v.show.includes(id);
+    const sd=el.getAttribute("data-side");
+    if(on && sd && sideF!=="all") on = (sideF==="top")===(sd==="t");
+    el.style.display=on?"":"none";
+  }
+  document.getElementById("mapnote").textContent=v.note;
+  renderLegend(v.legend);
+}
+function renderLegend(items){
+  const el=document.getElementById("legend"); let h="";
+  for(const [k,label] of items){
+    if(k==="grad"){
+      const stops=[...Array(9)].map((_,i)=>ramp(i/8)).join(",");
+      h+=`<span class="grad"><span class="bar" style="background:linear-gradient(90deg,${stops})"></span>${label}</span>`;
+    } else if(k==="bands"){
+      h+=`<span class="bands">`+BANDS.labels.map((l,i)=>
+        `<span class="lg-item"><span class="sw" style="background:${BANDS.colors[i]}"></span>${l}</span>`).join("")+`</span>`;
+    }
+    else if(k==="ring") h+=`<span class="lg-item"><span class="sw" style="border:2px solid var(--crit)"></span>${label}</span>`;
+    else if(k==="ctx")  h+=`<span class="lg-item"><span class="sw" style="background:var(--ctx)"></span>${label}</span>`;
+    else if(k==="c11")  h+=`<span class="lg-item"><span class="sw" style="background:var(--orange)"></span>${label}</span>`;
+    else if(k==="app")  h+=`<span class="lg-item"><span class="sw sq" style="background:var(--ink);width:14px;height:8px"></span>${label}</span>`;
+    else if(k==="x1")   h+=`<span class="lg-item"><span style="color:var(--orange);font-weight:700">✕</span>${label}</span>`;
+    else if(k==="x2")   h+=`<span class="lg-item"><span style="color:var(--warn);font-weight:700">✕</span>${label}</span>`;
+    else if(k==="shape")h+=`<span class="lg-item"><span class="sw" style="background:var(--blue)"></span><span class="sw sq" style="background:var(--blue)"></span>${label}</span>`;
+  }
+  el.innerHTML=h;
+}
+document.querySelectorAll(".seg button").forEach(b=>b.addEventListener("click",()=>{
+  view=b.dataset.view;
+  document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  apply();
+}));
+document.querySelectorAll(".sidef button").forEach(b=>b.addEventListener("click",()=>{
+  sideF=b.dataset.side;
+  document.querySelectorAll(".sidef button").forEach(x=>x.setAttribute("aria-pressed",x===b));
+  apply();
+}));
+apply();
+
+/* ---------- depth-band filter: hides markers (2026, 2011, rated pairs, context)
+   whose depth band is switched off; applies across every view */
+const bandOn = BANDS.labels.map(()=>true);
+const bandf = document.getElementById("bandf");
+const allBtn = bandf.querySelector(".bandf-all");
+BANDS.labels.forEach((label,i)=>{
+  const b=document.createElement("button");
+  b.type="button"; b.dataset.band=i; b.setAttribute("aria-pressed","true");
+  b.innerHTML=`<span class="sw" style="background:${BANDS.colors[i]}"></span>${label}`;
+  bandf.insertBefore(b, allBtn);
+});
+function applyBands(){
+  svg.querySelectorAll("[data-b]").forEach(el=>el.classList.toggle("bhide", !bandOn[+el.dataset.b]));
+  bandf.querySelectorAll("button[data-band]").forEach(b=>{
+    if(b.dataset.band==="all") b.setAttribute("aria-pressed", bandOn.every(Boolean));
+    else b.setAttribute("aria-pressed", bandOn[+b.dataset.band]);
+  });
+}
+bandf.addEventListener("click",e=>{
+  const b=e.target.closest("button[data-band]"); if(!b) return;
+  if(b.dataset.band==="all") bandOn.fill(true);
+  else {
+    const i=+b.dataset.band;
+    /* click = toggle; if every band is on, a click isolates that band (one-click "only this") */
+    if(bandOn.every(Boolean)) bandOn.forEach((_,k)=>bandOn[k]=(k===i));
+    else { bandOn[i]=!bandOn[i]; if(!bandOn.some(Boolean)) bandOn.fill(true); }
+  }
+  applyBands();
+});
+applyBands();
+
+/* ---------- tooltip (2026 features build their text lazily from the array) */
+const tt=document.getElementById("tooltip");
+function tipFor(t){
+  if(t.dataset.l==="26"){
+    const f=DATA.a26[+t.dataset.i];
+    return `${f[A26.id]}\ndepth ${f[A26.pct]}% of nominal  ·  ${f[A26.side]?"bottomside":"topside"}\n`+
+      `years remaining ${f[A26.yrs].toFixed(1)} (governing StPr + UPr, to ${STATS.mrt_min.toFixed(3)}")`;
+  }
+  return t.getAttribute("data-tip");
+}
+svg.addEventListener("pointermove",e=>{
+  const t=e.target.closest("[data-tip],[data-l]");
+  if(!t){ tt.style.display="none"; return; }
+  tt.textContent=tipFor(t);
+  tt.style.display="block";
+  const pad=14, w=tt.offsetWidth, h=tt.offsetHeight;
+  let x=e.clientX+pad, y=e.clientY+pad;
+  if(x+w>innerWidth-8)  x=e.clientX-w-pad;
+  if(y+h>innerHeight-8) y=e.clientY-h-pad;
+  tt.style.left=x+"px"; tt.style.top=y+"px";
+});
+svg.addEventListener("pointerleave",()=>tt.style.display="none");
+
+/* ---------- histograms */
+function hist(el, values, {min,max,bin,fmtX,neg}){
+  const bins=[]; const nb=Math.ceil((max-min)/bin);
+  for(let i=0;i<nb;i++) bins.push(0);
+  for(const v of values){
+    const i=Math.max(0,Math.min(nb-1,Math.floor((v-min)/bin))); bins[i]++;
+  }
+  const W=520,H=190,L=34,B=26,T=8;
+  const bw=(W-L-8)/nb, peak=Math.max(...bins);
+  let s="";
+  for(const gy of [0.5,1]){
+    const y=T+(H-B-T)*(1-gy);
+    s+=`<line x1="${L}" x2="${W-4}" y1="${y}" y2="${y}" stroke="var(--line-soft)"/>`+
+       `<text x="${L-5}" y="${y+4}" font-size="10" fill="var(--muted)" text-anchor="end"
+         font-family="var(--mono)">${Math.round(peak*gy)}</text>`;
+  }
+  bins.forEach((c,i)=>{
+    const x=L+i*bw, hh=c/peak*(H-B-T), lo=min+i*bin;
+    const isNeg=neg && lo<0;
+    s+=`<rect x="${x+1}" y="${H-B-hh}" width="${bw-2}" height="${hh}" rx="2"
+      fill="${isNeg?"var(--ctx)":"var(--blue)"}"><title>${fmtX(lo)}–${fmtX(lo+bin)}: ${c}</title></rect>`;
+    if(i%2===0) s+=`<text x="${x+bw/2}" y="${H-B+14}" font-size="10" fill="var(--muted)"
+      text-anchor="middle" font-family="var(--mono)">${fmtX(lo)}</text>`;
+  });
+  s+=`<line x1="${L}" x2="${W-4}" y1="${H-B}" y2="${H-B}" stroke="var(--line)"/>`;
+  if(neg){
+    const x0=L+((0-min)/bin)*bw;
+    s+=`<line x1="${x0}" x2="${x0}" y1="${T}" y2="${H-B}" stroke="var(--muted)"
+      stroke-dasharray="3 3"/>`;
+  }
+  el.innerHTML=s;
+}
+hist(document.getElementById("ch-growth"), DATA.growth_mils,
+  {min:-100,max:120,bin:10,fmtX:v=>v,neg:true});
+hist(document.getElementById("ch-depth"), DATA.depthpct26,
+  {min:45,max:100,bin:5,fmtX:v=>v+"%"});
+
+/* ---------- classification bars */
+function clsbar(barId, legId, parts){
+  const total=parts.reduce((a,p)=>a+p[1],0);
+  const bar=document.getElementById(barId), leg=document.getElementById(legId);
+  bar.innerHTML=parts.map(p=>
+    `<div style="flex:${p[1]};background:${p[2]}" title="${p[0]}: ${p[1]}"></div>`).join("");
+  leg.innerHTML=parts.map(p=>
+    `<span class="lg-item"><span class="sw sq" style="background:${p[2]}"></span>`+
+    `${p[0]} — <b>${p[1].toLocaleString("en-US")}</b> (${Math.round(p[1]/total*100)}%)</span>`).join("");
+}
+const flagged = STATS.nearmiss + STATS.watchlist;
+clsbar("bar11","leg11",[
+  ["matched to 2026", STATS.matched, "var(--blue)"],
+  ["not found — review flagged", flagged, "var(--warn)"],
+  ["not found — likely patched", STATS.notfound-flagged, "var(--orange)"],
+]);
+clsbar("bar26","leg26",[
+  ["matched to 2011", STATS.matched, "var(--blue)"],
+  ["absorbed into 2011 clusters", STATS.cluster, "#86b6ef"],
+  ["new or below 2011 threshold", STATS.new, "var(--ctx)"],
+]);
+
+/* ---------- repair-strategy table (ROSEN p.332 + uncoated) */
+document.querySelector("#repairtbl tbody").innerHTML = DATA.repair.map(r=>
+  `<tr${r.threshold_pct===STATS.threshold_pct?' class="sel"':''}><td>${r.threshold_pct}%</td>`+
+  `<td>${r.rt_after_repair_in.toFixed(4)}"</td><td>${r.upr_in_per_yr.toFixed(5)}</td>`+
+  `<td>${r.or_coated_raw_yr.toFixed(2)}</td><td>${r.or_coated_yr.toFixed(1)} yr</td>`+
+  `<td class="${r.or_uncoated_yr<5?"hi":""}">${r.or_uncoated_yr.toFixed(1)} yr</td></tr>`).join("");
+
+/* ---------- high-growth table */
+document.querySelector("#hitable tbody").innerHTML = DATA.high.map(r=>
+  `<tr><td>${r[HI.id11]}</td><td>${r[HI.id26]}</td><td>${r[HI.plate]}</td><td>${r[HI.d11]}"</td>`+
+  `<td>${r[HI.d26]}"</td><td class="hi">${r[HI.rate]}</td><td>${r[HI.dist]}"</td>`+
+  `<td${+r[HI.yrs]<1?' class="hi"':''}>${r[HI.yrs]}</td></tr>`).join("");
+
+/* ---------- all matched pairs: filter / sort / export ---------- */
+(function pairsTable(){
+  const rows = DATA.rates.map(r => ({
+    id11:r[RT.id11], id26:r[RT.id26], plate:r[RT.plate], d11:r[RT.d11], d26:r[RT.d26],
+    growth:Math.round((r[RT.d26]-r[RT.d11])*1000), rate:r[RT.rate], yrs:r[RT.yrs],
+    dist:r[RT.dist], rem26:r[RT.rem26], high:!!r[RT.high], clamped:!!r[RT.clamped],
+    review:r[RT.review]||"", band:bandIdx(r[RT.d26]/STATS.nominal*100),
+  }));
+  const el = id => document.getElementById(id);
+  const q=el("pq"), band=el("pband"), high=el("phigh"), clamp=el("pclamp"), rev=el("preview"),
+        tbody=document.querySelector("#pairstbl tbody"), count=el("pcount"), msg=el("pmsg"),
+        copyBtn=el("pcopy"), dlBtn=el("pdl");
+  band.innerHTML = `<option value="">any 2026 depth band</option>`+
+    BANDS.labels.map((l,i)=>`<option value="${i}">${l}</option>`).join("");
+  let sortKey="rate", sortDir=-1;
+
+  const COLS = ["id11","id26","plate","d11","d26","growth","rate","yrs","dist","rem26","flags"];
+  const HEAD = ["2011 id","2026 id","plate","depth 2011 in","depth 2026 in","growth mils",
+                "rate in/yr","years remaining","pair distance in","remaining 2026 in","flags"];
+  const flagsOf = r => [r.high&&"high_growth", r.clamped&&"clamped_zero",
+    r.review].filter(Boolean).join(" ");
+  const fmt = {d11:v=>v.toFixed(3), d26:v=>v.toFixed(4), rate:v=>v.toFixed(4),
+               yrs:v=>v.toFixed(1), dist:v=>v.toFixed(1), rem26:v=>v.toFixed(4)};
+
+  function filtered(){
+    const s=q.value.trim().toLowerCase(), b=band.value;
+    return rows.filter(r =>
+      (!s || r.id11.toLowerCase().includes(s) || r.id26.toLowerCase().includes(s) || String(r.plate)===s) &&
+      (b==="" || r.band===+b) && (!high.checked || r.high) && (!clamp.checked || !r.clamped) &&
+      (!rev.checked || r.review))
+    .sort((a,b2)=>{
+      const x=a[sortKey], y=b2[sortKey];
+      const c = typeof x==="string" ? x.localeCompare(y) : x-y;
+      return c*sortDir || a.id11.localeCompare(b2.id11);
+    });
+  }
+  function chips(r){
+    return (r.high?`<span class="chip-flag crit">high</span>`:"")+
+      (r.clamped?`<span class="chip-flag">clamped 0</span>`:"")+
+      (r.review==="watchlist_plate"?`<span class="chip-flag warn">watchlist</span>`:"")+
+      (r.review==="negative_growth_beyond_tolerance"?`<span class="chip-flag warn">neg &gt; tol</span>`:"");
+  }
+  function render(){
+    const list=filtered();
+    tbody.innerHTML = list.map(r=>`<tr><td>${esc(r.id11)}</td><td>${esc(r.id26)}</td>`+
+      `<td class="num">${r.plate}</td><td class="num">${fmt.d11(r.d11)}"</td><td class="num">${fmt.d26(r.d26)}"</td>`+
+      `<td class="num">${r.growth}</td><td class="num${r.high?" hi":""}">${fmt.rate(r.rate)}</td>`+
+      `<td class="num${r.yrs<1?" hi":""}">${fmt.yrs(r.yrs)}</td><td class="num">${fmt.dist(r.dist)}"</td>`+
+      `<td class="num">${fmt.rem26(r.rem26)}"</td><td>${chips(r)}</td></tr>`).join("");
+    const th=[...document.querySelectorAll("#pairstbl th[data-sort]")];
+    th.forEach(h=>{ h.innerHTML=h.textContent.replace(/[▲▼]/g,"").trim()+
+      (h.dataset.sort===sortKey?`<span class="dir">${sortDir<0?"▼":"▲"}</span>`:""); });
+    count.textContent=`showing ${list.length} of ${rows.length} · sorted by ${HEAD[COLS.indexOf(sortKey)]} ${sortDir<0?"↓":"↑"}`;
+    return list;
+  }
+  function csv(list){
+    const cell=v=>{ const s=String(v==null?"":v); return /[",\n]/.test(s)?`"${s.replace(/"/g,'""')}"`:s; };
+    return [HEAD.join(",")].concat(list.map(r=>COLS.map(k=>
+      k==="flags"?flagsOf(r):(fmt[k]?fmt[k](r[k]):r[k])).map(cell).join(","))).join("\r\n")+"\r\n";
+  }
+  const FILENAME="tk201_matched_pairs_2011-2026.csv";
+  function say(t){ msg.textContent=t; if(t) setTimeout(()=>{ if(msg.textContent===t) msg.textContent=""; }, 4000); }
+
+  [q,band,high,clamp,rev].forEach(c=>c.addEventListener("input",render));
+  el("preset").addEventListener("click",()=>{ q.value=""; band.value=""; high.checked=clamp.checked=rev.checked=false; render(); });
+  document.querySelectorAll("#pairstbl th[data-sort]").forEach(h=>h.addEventListener("click",()=>{
+    const k=h.dataset.sort; if(k===sortKey) sortDir=-sortDir; else { sortKey=k; sortDir=(k==="id11"||k==="id26")?1:-1; }
+    render();
+  }));
+
+  copyBtn.addEventListener("click", async ()=>{
+    const list=filtered(), text=csv(list);
+    try { await navigator.clipboard.writeText(text); say(`copied ${list.length} rows`); return; } catch(e){}
+    try {
+      const ta=document.createElement("textarea"); ta.value=text; ta.setAttribute("readonly","");
+      ta.style.position="fixed"; ta.style.left="-9999px"; document.body.appendChild(ta); ta.select();
+      const ok=document.execCommand("copy"); ta.remove();
+      if(ok){ say(`copied ${list.length} rows`); return; }
+    } catch(e){}
+    let ta=el("pfallback");
+    if(!ta){ ta=document.createElement("textarea"); ta.id="pfallback"; ta.className="pairs-fallback";
+      ta.setAttribute("readonly",""); tbody.closest(".pairs-body").appendChild(ta); }
+    ta.value=text; ta.focus(); ta.select(); say("clipboard blocked — CSV shown below, select and copy");
+  });
+
+  /* export: viewer path via the downloads capability; standalone file via a plain download */
+  let downloadsNs=null;
+  const inViewer = !!(window.claude && typeof window.claude.use==="function");
+  if(inViewer){
+    window.claude.use("downloads").then(ns=>{ downloadsNs=ns; if(ns) dlBtn.hidden=false; }).catch(()=>{});
+  } else {
+    dlBtn.hidden=false;
+  }
+  dlBtn.addEventListener("click", async ()=>{
+    const list=filtered(), text=csv(list);
+    if(downloadsNs){
+      try { await downloadsNs.save({filename:FILENAME, data:text}); say(`saved ${list.length} rows`); }
+      catch(e){ if(e && e.code==="declined") return;
+        if(e && e.code==="rate_limited") say("a save prompt is already open");
+        else say("download unavailable here — use Copy CSV"); }
+      return;
+    }
+    const blob=new Blob([text],{type:"text/csv;charset=utf-8"});
+    const url=URL.createObjectURL(blob), a=document.createElement("a");
+    a.href=url; a.download=FILENAME; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url), 2000); say(`downloading ${list.length} rows`);
+  });
+  render();
+})();
+</script>
